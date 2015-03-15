@@ -16,7 +16,6 @@ conditions = {}
 @bottle.route('/')
 def make_home_page():
 	global conditions
-	conditions.clear()
 	return bottle.template('home_page')
 
 # Called after user press the button
@@ -24,10 +23,11 @@ def make_home_page():
 @bottle.post('/')
 def process_search():
 	global conditions
-
+	conditions.clear()
 	conditions['elevation'] = (bottle.request.forms.get('elevation'))
 	conditions['latitude'] = (bottle.request.forms.get('latitude'))
 	conditions['longitude'] = (bottle.request.forms.get('longitude'))
+	conditions['date'] = (bottle.request.forms.get('date'))
 	conditions['prcp'] = (bottle.request.forms.get('prcp'))
 	conditions['snwd'] = (bottle.request.forms.get('snwd'))
 	conditions['tmax'] = (bottle.request.forms.get('tmax'))
@@ -55,8 +55,8 @@ def search_in_db():
 	global conditions
 	print('search_in_db')
 	pprint.pprint(conditions)
-	conditions = modify_dic(conditions)
-	items = db.temperature.find(conditions)
+	new_conditions = modify_dic(conditions)
+	items = db.condition.find(new_conditions)
 
 	return items
 
@@ -64,9 +64,11 @@ def modify_dic(conditions):
 	new_conditions = {}
 	for item in conditions:
 		new_conditions[item.upper()] = conditions[item]
-	# For temperature range search
-	new_conditions['TMAX'] = {'$lt': conditions['tmax']}
-	new_conditions['TMIN'] = {'$gt': conditions['tmin']}
+	# For temperature range search 
+	if new_conditions.has_key('TMAX'):
+		new_conditions['TMAX'] = {'$lte': conditions['tmax']}
+	if new_conditions.has_key('TMIN'):
+		new_conditions['TMIN'] = {'$gte': conditions['tmin']}
 
 	return new_conditions
 
@@ -78,8 +80,8 @@ def show_result():
 
 @bottle.post('/search')
 def go_back():
-	conditions.clear()
 	bottle.redirect('/')
+
 bottle.debug(True)
 bottle.run(host='localhost', port = 8082)
 
