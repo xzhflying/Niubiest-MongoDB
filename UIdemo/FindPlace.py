@@ -1,6 +1,6 @@
 '''
 	This is a program allowing users to search a particular place in China
-	by inputing certain conditions :)
+	by inputing certain conditions
 '''
 import pymongo
 from pymongo import MongoClient
@@ -24,9 +24,6 @@ def make_home_page():
 @bottle.post('/')
 def process_search():
 	global conditions
-
-	#	这里你只考虑为空的情况，没有考虑错误输入，我的demo有错误检测的内容哈，你要想想怎么办
-	#	并且这段代码我总觉得还能精炼，不过先这么写吧
 
 	conditions['elevation'] = (bottle.request.forms.get('elevation'))
 	conditions['latitude'] = (bottle.request.forms.get('latitude'))
@@ -58,37 +55,20 @@ def search_in_db():
 	global conditions
 	print('search_in_db')
 	pprint.pprint(conditions)
-	# for item in conditions:
-	# 	if conditions[item] == '':
-	# 		conditions.pop(item)
 	conditions = modify_dic(conditions)
-
-	#	呃，你这里面的find条件是怎么回事
-	items = db.condition.find(conditions)
+	items = db.temperature.find(conditions)
 
 	return items
 
 def modify_dic(conditions):
 	new_conditions = {}
-
-	#这一行应该能代替上面的所有了吧
 	for item in conditions:
 		new_conditions[item.upper()] = conditions[item]
-		
 	# For temperature range search
 	new_conditions['TMAX'] = {'$lt': conditions['tmax']}
 	new_conditions['TMIN'] = {'$gt': conditions['tmin']}
 
 	return new_conditions
-
-
-#	至于你说的不能范围查找，你还是没搞清楚JSON文件和字典的关系
-#	"DATE" : {'$gt': earliest, '$lt': latest}
-#	上面这句话能范围查找DATE吧，首先说明DATE关键字内容对应{'$gt': earliest, '$lt': latest}吧
-#	那么DATE关键字对应的是不是又是一个字典，其中'$gt'字段对应earliest
-#   温度不也一样吗，你 dic['Temperature']['$gt'] ＝ Tmax  难道不行吗？  意思是这个意思，再琢磨琢磨
-#	还有，既然是提交了。。。就把没用的注释乱七八糟的删了，到时候直接提交到那边去的，注释什么的，都规范点呐
-
 
 # Display the search result
 @bottle.route('/search')
