@@ -30,7 +30,9 @@ def process_search():
 	conditions['date'] = (bottle.request.forms.get('mindate'),bottle.request.forms.get('maxdate'))
 	conditions['prcp'] = (bottle.request.forms.get('minprcp'),bottle.request.forms.get('maxprcp'))
 	conditions['snwd'] = (bottle.request.forms.get('minsnwd'),bottle.request.forms.get('maxsnwd'))
-	conditions['temperature'] = ((bottle.request.forms.get('tmin')),bottle.request.forms.get('tmax'))
+	conditions['tmax'] = ((bottle.request.forms.get('mintmax')),bottle.request.forms.get('maxtmax'))
+	conditions['tmin'] = ((bottle.request.forms.get('mintmin')),bottle.request.forms.get('maxtmin'))
+
 
 	conditions = check_input(conditions)
 	bottle.redirect("/search")
@@ -40,52 +42,25 @@ def check_input(conditions):
 	pprint.pprint(conditions)
 	new_conditions = {}
 	for item in conditions:
-		if str(item) != 'temperature':
-			if conditions[str(item)][0] != '' or conditions[str(item)][1] != '':
-				new_conditions[item.upper()] = {}
-			if conditions[str(item)][0] != '':
-				try:
-					#print(str(item), 'conditions[str(item)][0]', conditions[str(item)][0])
-					new_conditions[item.upper()]['$gte'] = float(conditions[str(item)][0])
-				except:
-					print str(item)
-					bottle.redirect("/")
-			if conditions[str(item)][1] != '':
-				try:				
-					#print('conditions[str(item)][1]', conditions[str(item)][1])
-					new_conditions[item.upper()]['$lte'] = float(conditions[str(item)][1])
-				except:
-					print str(item)
-					bottle.redirect("/")
-		# Modify temperature
-		else:
-			if conditions['temperature'][0] != '':
-				try:
-					new_conditions['TMIN'] = {'$gte':float(conditions['temperature'][0])}
-				except Exception, e:
-					print e
-					bottle.redirect("/")
-			if conditions['temperature'][1] != '':
-				try:
-					new_conditions['TMAX'] = {'$lte':float(conditions['temperature'][1])}
-				except Exception, e:
-					print e
-					bottle.redirect("/")
+		if conditions[str(item)][0] != '' or conditions[str(item)][1] != '':
+			new_conditions[item.upper()] = {}
+		if conditions[str(item)][0] != '':
+			try:
+				#print(str(item), 'conditions[str(item)][0]', conditions[str(item)][0])
+				new_conditions[item.upper()]['$gte'] = float(conditions[str(item)][0])
+			except:
+				print str(item)
+				bottle.redirect("/")
+		if conditions[str(item)][1] != '':
+			try:				
+				#print('conditions[str(item)][1]', conditions[str(item)][1])
+				new_conditions[item.upper()]['$lte'] = float(conditions[str(item)][1])
+			except:
+				print str(item)
+				bottle.redirect("/")
+
 	pprint.pprint(new_conditions)
 	return new_conditions
-
-# def modify_dic(conditions):
-# 	new_conditions = {}
-# 	for item in conditions:
-# 			if conditions[str(item)][0] != '':
-# 				new_conditions[item.upper()]
-# 		# For temperature range search
-# 		else:
-# 			if conditions['temperature'].[0]:
-# 				new_conditions['TMAX'] = {'$lte': conditions['tmax']}
-# 			if new_conditions.has_key('TMIN'):
-# 				new_conditions['TMIN'] = {'$gte': conditions['tmin']}
-#	return new_conditions
 
 # Display the search result
 @bottle.route('/search')
