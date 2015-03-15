@@ -24,59 +24,84 @@ def make_home_page():
 def process_search():
 	global conditions
 	conditions.clear()
-	conditions['elevation'] = (bottle.request.forms.get('elevation'))
-	conditions['latitude'] = (bottle.request.forms.get('latitude'))
-	conditions['longitude'] = (bottle.request.forms.get('longitude'))
-	conditions['date'] = (bottle.request.forms.get('date'))
-	conditions['prcp'] = (bottle.request.forms.get('prcp'))
-	conditions['snwd'] = (bottle.request.forms.get('snwd'))
-	conditions['tmax'] = (bottle.request.forms.get('tmax'))
-	conditions['tmin'] = (bottle.request.forms.get('tmin'))
+	conditions['elevation'] = (bottle.request.forms.get('minelevation'), bottle.request.forms.get('maxelevation'))
+	conditions['latitude'] = (bottle.request.forms.get('minlatitude'), bottle.request.forms.get('maxlatitude'))
+	conditions['longitude'] = (bottle.request.forms.get('minlongitude'), bottle.request.forms.get('maxlongitude'))
+	conditions['date'] = (bottle.request.forms.get('mindate'),bottle.request.forms.get('maxdate'))
+	conditions['prcp'] = (bottle.request.forms.get('minprcp'),bottle.request.forms.get('maxprcp'))
+	conditions['snwd'] = (bottle.request.forms.get('minsnwd'),bottle.request.forms.get('maxsnwd'))
+	conditions['temperature'] = ((bottle.request.forms.get('tmin')),bottle.request.forms.get('tmax'))
 
 	conditions = check_input(conditions)
-	pprint.pprint(conditions)
 	bottle.redirect("/search")
 
 # Eliminate empty input and ensure valid conditions
 def check_input(conditions):
-	new_conditions = {}
-	for item in conditions:
-		if conditions[str(item)] != '':
-			try:
-				new_conditions[str(item)] = float(conditions[str(item)])
-			except:
-				print('Error')
-				bottle.redirect("/")
-				pass
-	return new_conditions
-
-# Use the given conditions to search in the database
-def search_in_db():
-	global conditions
-	print('search_in_db')
 	pprint.pprint(conditions)
-	new_conditions = modify_dic(conditions)
-	items = db.condition.find(new_conditions)
-
-	return items
-
-def modify_dic(conditions):
 	new_conditions = {}
 	for item in conditions:
-		new_conditions[item.upper()] = conditions[item]
-	# For temperature range search 
-	if new_conditions.has_key('TMAX'):
-		new_conditions['TMAX'] = {'$lte': conditions['tmax']}
-	if new_conditions.has_key('TMIN'):
-		new_conditions['TMIN'] = {'$gte': conditions['tmin']}
-
+		if str(item) != 'temperature':
+			if conditions[str(item)][0] != '' or conditions[str(item)][1] != '':
+				new_conditions[item.upper()] = {}
+			if conditions[str(item)][0] != '':
+				try:
+					#print(str(item), 'conditions[str(item)][0]', conditions[str(item)][0])
+					new_conditions[item.upper()]['$gte'] = float(conditions[str(item)][0])
+				except:
+					print str(item)
+					bottle.redirect("/")
+			if conditions[str(item)][1] != '':
+				try:				
+					#print('conditions[str(item)][1]', conditions[str(item)][1])
+					new_conditions[item.upper()]['$lte'] = float(conditions[str(item)][1])
+				except:
+					print str(item)
+					bottle.redirect("/")
+		# Modify temperature
+		else:
+			if conditions['temperature'][0] != '':
+				try:
+					new_conditions['TMIN'] = {'$gte':float(conditions['temperature'][0])}
+				except Exception, e:
+					print e
+					bottle.redirect("/")
+			if conditions['temperature'][1] != '':
+				try:
+					new_conditions['TMAX'] = {'$lte':float(conditions['temperature'][1])}
+				except Exception, e:
+					print e
+					bottle.redirect("/")
+	pprint.pprint(new_conditions)
 	return new_conditions
+
+# def modify_dic(conditions):
+# 	new_conditions = {}
+# 	for item in conditions:
+# 			if conditions[str(item)][0] != '':
+# 				new_conditions[item.upper()]
+# 		# For temperature range search
+# 		else:
+# 			if conditions['temperature'].[0]:
+# 				new_conditions['TMAX'] = {'$lte': conditions['tmax']}
+# 			if new_conditions.has_key('TMIN'):
+# 				new_conditions['TMIN'] = {'$gte': conditions['tmin']}
+#	return new_conditions
 
 # Display the search result
 @bottle.route('/search')
 def show_result():
 	global conditions
 	return bottle.template('result', {"Items": search_in_db()})
+
+# Use the given conditions to search in the database
+def search_in_db():
+	global conditions
+	print('search_in_db')
+	pprint.pprint(conditions)
+	#new_conditions = modify_dic(conditions)
+	items = db.condition.find(conditions)
+
+	return items
 
 @bottle.post('/search')
 def go_back():
