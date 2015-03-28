@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<style type="text/css">
+	body, html,#allmap {width: 100%;height: 80%;margin:0;font-family:"微软雅黑";}
+	</style>
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=6l5K2xmDZK0HrYEaIp6ujXtp"></script>
+	<title>地图展示</title>
+</head>
+<body>
+	<div id="allmap"></div>
+	<div id="point">
+		插入点：<br />
+		<form>
+			输入经度：<input id="p_longitude" type="text" />
+			输入纬度：<input id="p_latitude" type="text" /> 
+			<input id="point_btn" type="button" value="确认" onclick="point();"/>
+		</form>
+	</div>
+	<div id="circle">
+		插入圆：<br />
+		<form>
+			输入经度：<input id="c_longitude" type="text"/>
+			输入纬度：<input id="c_latitude" type="text" />
+			<input id="circle_btn" type="button" value="确认" onclick="circle();" />
+		</form>
+	</div>
+
+</body>
+</html>
+<script type="text/javascript">
+	// 百度地图API功能
+	var map = new BMap.Map("allmap");    // 创建Map实例
+	map.centerAndZoom(new BMap.Point(116.404, 39.915), 11);  // 初始化地图,设置中心点坐标和地图级别
+	map.addControl(new BMap.MapTypeControl());   //添加地图类型控件
+	map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+	
+	function point()
+	{
+		var longitude = parseFloat(document.getElementById("p_longitude").value);
+		var latitude = parseFloat(document.getElementById("p_latitude").value);
+		var point = new BMap.Point(longitude,latitude);
+		var marker = new BMap.Marker(point);
+		map.centerAndZoom(point,15);
+		map.addOverlay(marker);
+		var sContent ="<h4 style='margin:0 0 5px 0;padding:0.2em 0'>输入框</h4>" + 
+	"<textarea></textarea>" + "</div>";
+		var infoWindow = new BMap.InfoWindow(sContent);
+		marker.addEventListener("click", function(){          
+			this.openInfoWindow(infoWindow);
+		});
+	}
+	
+	function circle()
+	{
+		var longitude = parseFloat(document.getElementById("c_longitude").value);
+		var latitude = parseFloat(document.getElementById("c_latitude").value);
+		var point = new BMap.Point(longitude,latitude);
+		var circle = new BMap.Circle(point,500,{strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5});
+		map.centerAndZoom(point,15);
+		map.addOverlay(circle);
+	}
+	
+</script>
