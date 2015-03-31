@@ -16,7 +16,8 @@ conditions = {}
 @bottle.route('/')
 def make_home_page():
 	global conditions
-	return bottle.template('home_page')
+	PlaceOptions = db.condition.distinct('STATION_NAME')
+	return bottle.template('home_page', {'PlaceOptions': PlaceOptions})
 
 # Called after user press the button
 # Get the given conditions from text boxes in the homepage
@@ -33,6 +34,8 @@ def process_search():
 	conditions['tmax'] = ((bottle.request.forms.get('mintmax')),bottle.request.forms.get('maxtmax'))
 	conditions['tmin'] = ((bottle.request.forms.get('mintmin')),bottle.request.forms.get('maxtmin'))
 
+	# Determine the specific station_name
+	place = (bottle.request.forms.get('station_name'))
 
 	conditions = check_input(conditions)
 	bottle.redirect("/search")

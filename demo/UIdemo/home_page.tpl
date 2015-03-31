@@ -13,6 +13,17 @@
  	SnowDepth: <input type="text" name="minsnwd" value=-9999>~<input type="text" name="maxsnwd" value = 5><br>
  	Max Temperature: <input type="text" name="mintmax" value=100>~<input type="text" name="maxtmax" value=189><br>
  	Min Temperature: <input type="text" name="mintmin" value=-9999>~<input type="text" name="maxtmin" value=0><br>
+ 	Place: <select name="station_name"> 
+ 	<tr>
+ 		<option></option>
+ 	</tr>
+ 	%for option in PlaceOptions:
+ 	<tr>
+ 		<option>{{option}}</option>
+ 	</tr>
+ 	%end
+ 	</select>
+ 	<br>
     <input type="submit" value="search"><br>
 </form>
 </body>
